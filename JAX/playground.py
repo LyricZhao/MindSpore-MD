@@ -27,6 +27,12 @@ displacement, shift = space.periodic(box_size)
 energy_fn = energy.soft_sphere_pair(displacement)
 
 # simulate
+# force(energy) = -d(energy)/dR
+# xi = random.normal(R.shape, R.dtype)
+# gamma = 0.1
+# nu = 1 / (mass * gamma)
+# dR = force(R) * dt * nu + np.sqrt(2 * temperature * dt * nu) * xi
+# BrownianState(position, mass, rng)
 pos_key, sim_key = random.split(random.PRNGKey(0))
 R = random.uniform(pos_key, (N, 2), maxval=box_size)
 init_fn, apply_fn = simulate.brownian(energy_fn, shift, dt, temperature)
