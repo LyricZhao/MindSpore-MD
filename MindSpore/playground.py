@@ -70,17 +70,9 @@ def force_fn(R: Tensor, mask: Tensor):
 
 
 @ms_function
-def apply_fn(R, mask):
-    xi = Tensor(np.random.normal(size=R.shape), dtype=dtype)
+def apply_fn(R, mask, xi):
     dR = force_fn(R, mask) * dt * nu + xi_c * xi
     return shift(R, dR)
-
-
-@ms_function
-def debug_test(R):
-    dr = reduce_sum(R * R, -1)
-    dr = F.sqrt(dr)
-    return dr
 
 
 R = Tensor(np.random.normal(size=(N, dims)), dtype=dtype)
@@ -88,11 +80,10 @@ mask = Tensor(1.0 - np.eye(N), dtype=dtype)
 
 # start simulation
 time_elapsed = time.perf_counter_ns()
-# for i in range(n_iter):
-#     if not i or (i + 1) % 100 == 0:
-#         print('Running iteration {} ...'.format(i + 1))
-#     R = apply_fn(R, mask)
-# time_elapsed = time.perf_counter_ns() - time_elapsed
-# print(force_fn(R, mask))
-print(C.grad(debug_test)(R))
+for i in range(n_iter):
+    if not i or (i + 1) % 1 == 0:
+        print('Running iteration {} ...'.format(i + 1))
+    xi = Tensor(np.random.normal(size=R.shape), dtype=dtype)
+    R = apply_fn(R, mask, xi)
+time_elapsed = time.perf_counter_ns() - time_elapsed
 print('Simulation finished in {:.3f}s, {:.3f}ms per iteration.'.format(time_elapsed / 1e9, time_elapsed / 1e6 / n_iter))
