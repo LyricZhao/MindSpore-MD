@@ -14,7 +14,6 @@ import mindspore.ops.operations as P
 N = 32
 dims = 2
 dt = 1e-1
-box_size = 5.0
 temperature = 0.1
 n_iter = 1000
 gamma = 0.1
@@ -22,7 +21,6 @@ mass = 1.0
 nu = 1.0 / (mass * gamma)
 xi_c = math.sqrt(2.0 * temperature * dt * nu)
 dtype = mindspore.float32
-
 
 # Runtime configs
 context.set_context(mode=context.GRAPH_MODE, device_target='GPU')
@@ -58,9 +56,10 @@ def shift(R: Tensor, dR: Tensor):
 @ms_function
 def energy_fn(R: Tensor, mask: Tensor):
     dr = pairwise_displacement(R)
-    dr = F.sqrt(reduce_sum(dr * dr, -1))
+    # TODO: plus 1e-6 is not accurate, a safe mask is better
+    dr = F.sqrt(reduce_sum(dr * dr, -1) + 1e-6)
     U = max_op(1 - dr, 0)
-    U = U * U * mask * 0.5
+    U = reduce_sum(U * U * mask) * 0.5 * 0.5
     return U
 
 
@@ -75,13 +74,13 @@ def apply_fn(R, mask, xi):
     return shift(R, dR)
 
 
-R = Tensor(np.random.normal(size=(N, dims)), dtype=dtype)
+R = Tensor(np.random.uniform(size=(N, dims)), dtype=dtype)
 mask = Tensor(1.0 - np.eye(N), dtype=dtype)
 
 # start simulation
 time_elapsed = time.perf_counter_ns()
 for i in range(n_iter):
-    if not i or (i + 1) % 1 == 0:
+    if not i or (i + 1) % 100 == 0:
         print('Running iteration {} ...'.format(i + 1))
     xi = Tensor(np.random.normal(size=R.shape), dtype=dtype)
     R = apply_fn(R, mask, xi)

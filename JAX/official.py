@@ -1,26 +1,18 @@
-from jax import random, jit
-from jax_md import energy, space, simulate
+import jax.numpy as jnp
+from jax import grad, pmap
 
 
-N = 32
-dt = 1e-1
-temperature = 0.1
-box_size = 5.0
-key = random.PRNGKey(0)
-displacement, shift = space.periodic(box_size)
-energy_fn = energy.soft_sphere_pair(displacement)
+def pairwise_displacement(R):
+    dR = jnp.expand_dims(R, 1) - jnp.expand_dims(R, 0)
+    return dR
 
 
-def simulation(key):
-    pos_key, sim_key = random.split(key)
-    R = random.uniform(pos_key, (N, 2), maxval=box_size)
-    init_fn, apply_fn = simulate.brownian(
-        energy_fn, shift, dt, temperature)
-    state = init_fn(sim_key, R)
-    for i in range(1000):
-        state = apply_fn(state)
-    return state.position
+def test_fn(R):
+    dr = pairwise_displacement(R)
+    dr = jnp.sqrt(jnp.sum(dr * dr, -1))
+    return dr
 
 
-positions = simulation(key)
-print(positions)
+R = jnp.array([[1.0, 0.98], [1.02, 1.01]], dtype=jnp.float32)
+print(test_fn(R))
+# print(grad(test_fn)(R))

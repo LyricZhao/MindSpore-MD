@@ -1,5 +1,6 @@
 import time
 
+import jax.numpy as jnp
 from jax import random, jit
 from jax_md import space, energy, simulate
 
@@ -8,7 +9,6 @@ from jax_md import space, energy, simulate
 N = 32
 dt = 1e-1
 temperature = 0.1
-box_size = 5.0
 n_iter = 1000
 
 # R: current position
@@ -22,10 +22,10 @@ n_iter = 1000
 #   np.mod(R + dR, side)
 # shift:
 #   R + dR
-displacement, shift = space.periodic(box_size)
+displacement, shift = space.free()
 
 # dr: pairwise distances
-# epsilon: Interaction energy scale (const)
+# epsilon: interaction energy scale (const)
 # alpha: interaction stiffness
 # dr = distance(R)
 # U(dr) = np.where(dr < 1.0, (1 - dr) ** 2, 0)
@@ -40,7 +40,7 @@ energy_fn = energy.soft_sphere_pair(displacement)
 # dR = force(R) * dt * nu + np.sqrt(2 * temperature * dt * nu) * xi
 # BrownianState(position, mass, rng)
 pos_key, sim_key = random.split(random.PRNGKey(0))
-R = random.uniform(pos_key, (N, 2), maxval=box_size)
+R = random.uniform(pos_key, (N, 2), dtype=jnp.float32)
 init_fn, apply_fn = simulate.brownian(energy_fn, shift, dt, temperature)
 apply_fn = jit(apply_fn)
 state = init_fn(sim_key, R)
@@ -52,5 +52,4 @@ for i in range(n_iter):
         print('Running iteration {} ...'.format(i + 1))
     state = apply_fn(state)
 time_elapsed = time.perf_counter_ns() - time_elapsed
-print(state.position)
 print('Simulation finished in {:.3f}s, {:.3f}ms per iteration.'.format(time_elapsed / 1e9, time_elapsed / 1e6 / n_iter))
