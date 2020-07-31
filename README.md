@@ -2,14 +2,10 @@
 
 An simple example of Molecular Dynamics simulation on MindSpore and JAX-MD.
 
-### Run MindSpore Simulation
+### Run Simulation
 
 ```shell script
-python mindspore_impl.py
+python benchmark.py
 ```
 
-### Run JAX-MD Simulation
-
-```shell script
-python jax_impl.py
-```
+Change the dict `configs` in `benchmark.py` to configure JAX and MindSpore configuration.
