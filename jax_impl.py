@@ -48,8 +48,10 @@ state = init_fn(sim_key, R)
 # start simulation
 time_elapsed = time.perf_counter_ns()
 for i in range(n_iter):
-    if not i or (i + 1) % 100 == 0:
-        print('Running iteration {} ...'.format(i + 1))
     state = apply_fn(state)
-time_elapsed = time.perf_counter_ns() - time_elapsed
-print('Simulation finished in {:.3f}s, {:.3f}ms per iteration.'.format(time_elapsed / 1e9, time_elapsed / 1e6 / n_iter))
+    if not i or (i + 1) % 100 == 0:
+        total_time = time.perf_counter_ns() - time_elapsed
+        print('Finish iteration {} ({:.3f}ms, {:.3f}ms per iteration)'
+              .format(i + 1, total_time / 1e6, total_time / (1 if not i else 100) / 1e6))
+        time_elapsed = time.perf_counter_ns()
+print('Simulation done!')
