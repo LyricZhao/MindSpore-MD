@@ -10,20 +10,17 @@ from mindspore import Tensor
 import mindspore.ops.functional as F
 import mindspore.ops.operations as P
 
+
 # MD configs
-N = 32
 dims = 2
 dt = 1e-1
 temperature = 0.1
-n_iter = 1000
 gamma = 0.1
 mass = 1.0
 nu = 1.0 / (mass * gamma)
 xi_c = math.sqrt(2.0 * temperature * dt * nu)
 dtype = mindspore.float32
 
-# Runtime configs
-context.set_context(mode=context.GRAPH_MODE, device_target='GPU')
 
 # Functions
 reduce_sum = P.ReduceSum()
@@ -74,17 +71,22 @@ def apply_fn(R, mask, xi):
     return shift(R, dR)
 
 
-R = Tensor(np.random.uniform(size=(N, dims)), dtype=dtype)
-mask = Tensor(1.0 - np.eye(N), dtype=dtype)
+def run(N=32, n_iter=1000, with_graph_mode=True):
+    # Runtime configs
+    context.set_context(mode=(context.GRAPH_MODE if with_graph_mode else context.PYNATIVE_MODE), device_target='GPU')
 
-# start simulation
-time_elapsed = time.perf_counter_ns()
-for i in range(n_iter):
-    xi = Tensor(np.random.normal(size=R.shape), dtype=dtype)
-    R = apply_fn(R, mask, xi)
-    if not i or (i + 1) % 100 == 0:
-        total_time = time.perf_counter_ns() - time_elapsed
-        print('Finish iteration {} ({:.3f}ms, {:.3f}ms per iteration)'
-              .format(i + 1, total_time / 1e6, total_time / (1 if not i else 100) / 1e6))
-        time_elapsed = time.perf_counter_ns()
-print('Simulation done!')
+    # Simulation init
+    R = Tensor(np.random.uniform(size=(N, dims)), dtype=dtype)
+    mask = Tensor(1.0 - np.eye(N), dtype=dtype)
+
+    # Start simulation
+    times = []
+    for i in range(n_iter):
+        xi = Tensor(np.random.normal(size=R.shape), dtype=dtype)
+        time_start = time.perf_counter_ns()
+        R = apply_fn(R, mask, xi)
+        time_end = time.perf_counter_ns()
+        times.append(time_end - time_start)
+
+    # Finish with profiling times
+    return times
