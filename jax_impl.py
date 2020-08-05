@@ -1,11 +1,17 @@
 import time
+import os
 
-import jax.numpy as jnp
-from jax import random, jit
-from jax_md import space, energy, simulate
+# Disable TensorFlow-XLA warning output
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# Disable TensorFlow-XLA memory pre-allocation
+os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'] = 'false'
 
 
 def run(N=32, n_iter=1000, with_jit=True):
+    import jax.numpy as jnp
+    from jax import random, jit
+    from jax_md import space, energy, simulate
+
     # MD configs
     dt = 1e-1
     temperature = 0.1
@@ -55,3 +61,11 @@ def run(N=32, n_iter=1000, with_jit=True):
 
     # Finish with profiling times
     return times
+
+
+if __name__ == '__main__':
+    print('Running JAX with JIT implement ... ', end='')
+    time_elapsed = time.perf_counter_ns()
+    run(32, 1000, True)
+    time_elapsed = (time.perf_counter_ns() - time_elapsed) / 1e6
+    print('done in {:.3f}ms!'.format(time_elapsed))

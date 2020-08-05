@@ -3,13 +3,6 @@ import time
 import numpy as np
 
 if __name__ == '__main__':
-    # Disable TensorFlow-XLA warning output
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-    # Disable TensorFlow-XLA memory pre-allocation
-    os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'] = 'false'
-    # Disable MindSpore warning output
-    os.environ['GLOG_v'] = '3'
-
     # Imports implements
     import jax_impl
     import mindspore_impl
@@ -20,7 +13,8 @@ if __name__ == '__main__':
     configs = [
         ('JAX', jax_impl.run, {'with_jit': False}),
         ('JAX with JIT', jax_impl.run, {'with_jit': True}),
-        ('MindSpore', mindspore_impl.run, {'with_graph_mode': True})]
+        ('MindSpore', mindspore_impl.run, {'with_graph_mode': True})
+    ]
 
     # Run
     csv_rows = []
