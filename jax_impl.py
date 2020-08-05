@@ -5,6 +5,10 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 # Disable TensorFlow-XLA memory pre-allocation
 os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'] = 'false'
+# Dump IR and graphs
+# os.environ['XLA_FLAGS'] = "--xla_dump_to=."
+# os.environ['TF_DUMP_GRAPH_PREFIX'] = '.'
+# os.environ['TF_XLA_FLAGS'] = '--tf_xla_auto_jit=2 --tf_xla_clustering_debug'
 
 
 def run(N=32, n_iter=1000, with_jit=True):

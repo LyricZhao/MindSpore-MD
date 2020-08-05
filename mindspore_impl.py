@@ -60,6 +60,7 @@ def energy_fn(R: Tensor, mask: Tensor):
     dr = pairwise_displacement(R)
     # TODO: plus 1e-6 is not accurate, a safe mask is better
     dr = F.sqrt(reduce_sum(dr * dr, -1) + 1.1920928955078125e-07)
+    # TODO: max_op is so time consuming
     U = max_op(1 - dr, 0)
     U = reduce_sum(U * U * mask) * 0.5 * 0.5
     return U
@@ -101,6 +102,6 @@ def run(N=32, n_iter=1000, with_graph_mode=True, save_ir_graph=False):
 if __name__ == '__main__':
     print('Running MindSpore implement ... ', end='')
     time_elapsed = time.perf_counter_ns()
-    run(32, 1000, True, True)
+    run(4096, 100, True, True)
     time_elapsed = (time.perf_counter_ns() - time_elapsed) / 1e6
     print('done in {:.3f}ms!'.format(time_elapsed))

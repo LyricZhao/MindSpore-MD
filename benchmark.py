@@ -1,4 +1,3 @@
-import os
 import time
 import numpy as np
 
@@ -8,10 +7,10 @@ if __name__ == '__main__':
     import mindspore_impl
 
     # Configs
-    n_iter = 1000
-    cases = [32, 64, 128, 256, 512, 1024, 2048]
+    n_iter = 100
+    cases = [4096]
     configs = [
-        ('JAX', jax_impl.run, {'with_jit': False}),
+        # ('JAX', jax_impl.run, {'with_jit': False}),
         ('JAX with JIT', jax_impl.run, {'with_jit': True}),
         ('MindSpore', mindspore_impl.run, {'with_graph_mode': True})
     ]
