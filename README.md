@@ -1,6 +1,6 @@
 ## MindSpore-MD
 
-An simple example of Molecular Dynamics simulation on MindSpore and JAX-MD.
+A simple example of Molecular Dynamics simulation on MindSpore and JAX-MD.
 
 ### Run Simulation
 
