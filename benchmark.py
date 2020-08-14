@@ -8,11 +8,11 @@ if __name__ == '__main__':
 
     # Configs
     n_iter = 100
-    cases = [4096]
+    cases = [32, 64, 128, 256, 512, 1024, 2048, 4096]
     configs = [
         # ('JAX', jax_impl.run, {'with_jit': False}),
         ('JAX with JIT', jax_impl.run, {'with_jit': True}),
-        ('MindSpore', mindspore_impl.run, {'with_graph_mode': True})
+        ('MindSpore', mindspore_impl.run, {})
     ]
 
     # Run

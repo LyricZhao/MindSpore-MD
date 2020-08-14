@@ -1,5 +1,6 @@
 import time
 import os
+import numpy as np
 
 # Disable TensorFlow-XLA warning output
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -70,6 +71,7 @@ def run(N=32, n_iter=1000, with_jit=True):
 if __name__ == '__main__':
     print('Running JAX with JIT implement ... ', end='')
     time_elapsed = time.perf_counter_ns()
-    run(32, 1000, True)
+    times = run(4096, 100, True)
     time_elapsed = (time.perf_counter_ns() - time_elapsed) / 1e6
-    print('done in {:.3f}ms!'.format(time_elapsed))
+    time_per_iter = np.mean(times[1:]) / 1e6
+    print('done in {:.3f}ms ({:.3f}ms per iteration)!'.format(time_elapsed, time_per_iter))

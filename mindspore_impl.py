@@ -30,6 +30,8 @@ dtype = mindspore.float32
 # Functions
 reduce_sum = P.ReduceSum()
 max_op = P.Maximum()
+normal = P.StandardNormal(seed=1, seed2=2)
+relu = P.ReLU()
 
 
 @ms_function
@@ -56,24 +58,23 @@ def shift(R: Tensor, dR: Tensor):
 
 
 @ms_function
-def energy_fn(R: Tensor, mask: Tensor):
+def energy_fn(R: Tensor):
     dr = pairwise_displacement(R)
-    # TODO: plus 1e-6 is not accurate, a safe mask is better
+    # TODO: plus \epsilon is not accurate, a safe mask is better
     dr = F.sqrt(reduce_sum(dr * dr, -1) + 1.1920928955078125e-07)
-    # TODO: max_op is so time consuming
-    U = max_op(1 - dr, 0)
-    U = reduce_sum(U * U * mask) * 0.5 * 0.5
+    U = relu(1 - dr)
+    U = reduce_sum(U * U)
     return U
 
 
 @ms_function
-def force_fn(R: Tensor, mask: Tensor):
-    return -C.grad(energy_fn)(R, mask)
+def force_fn(R: Tensor):
+    return -C.grad(energy_fn)(R)
 
 
 @ms_function
-def apply_fn(R, mask, xi):
-    dR = force_fn(R, mask) * dt * nu + xi_c * xi
+def apply_fn(R: Tensor, xi):
+    dR = force_fn(R) * dt * nu + xi_c * xi
     return shift(R, dR)
 
 
@@ -84,14 +85,13 @@ def run(N=32, n_iter=1000, with_graph_mode=True, save_ir_graph=False):
 
     # Simulation init
     R = Tensor(np.random.uniform(size=(N, dims)), dtype=dtype)
-    mask = Tensor(1.0 - np.eye(N), dtype=dtype)
 
     # Start simulation
     times = []
     for i in range(n_iter):
         xi = Tensor(np.random.normal(size=R.shape), dtype=dtype)
         time_start = time.perf_counter_ns()
-        R = apply_fn(R, mask, xi)
+        R = apply_fn(R, xi)
         time_end = time.perf_counter_ns()
         times.append(time_end - time_start)
 
@@ -102,6 +102,7 @@ def run(N=32, n_iter=1000, with_graph_mode=True, save_ir_graph=False):
 if __name__ == '__main__':
     print('Running MindSpore implement ... ', end='')
     time_elapsed = time.perf_counter_ns()
-    run(4096, 100, True, True)
+    times = run(4096, 100, True, False)
     time_elapsed = (time.perf_counter_ns() - time_elapsed) / 1e6
-    print('done in {:.3f}ms!'.format(time_elapsed))
+    time_per_iter = np.mean(times[1:]) / 1e6
+    print('done in {:.3f}ms ({:.3f}ms per iteration)!'.format(time_elapsed, time_per_iter))
