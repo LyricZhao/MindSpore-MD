@@ -36,6 +36,7 @@ class Energy(nn.Cell):
         dr = self.expand(R, 2) - self.expand(R, 1)
         dr = self.sqrt(self.reduce_sum(dr * dr, -1) + 1.1920928955078125e-07)
         U = self.relu(1 - dr)
+        # BUG: the line below should be `U = self.reduce_sum(U * U) * 0.5 * 0.5`
         U = self.reduce_sum(U * U)
         return U
 

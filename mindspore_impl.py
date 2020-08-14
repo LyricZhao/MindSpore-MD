@@ -63,7 +63,7 @@ def energy_fn(R: Tensor):
     # TODO: plus \epsilon is not accurate, a safe mask is better
     dr = F.sqrt(reduce_sum(dr * dr, -1) + 1.1920928955078125e-07)
     U = relu(1 - dr)
-    U = reduce_sum(U * U)
+    U = reduce_sum(U * U) * 0.5 * 0.5
     return U
 
 
