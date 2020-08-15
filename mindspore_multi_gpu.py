@@ -12,6 +12,7 @@ from mindspore.communication.management import init, get_rank
 from mindspore.train import Model
 
 # N must be fixed
+# Overflow when N=32768
 N = 16384
 
 # Runtime configs
